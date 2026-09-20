@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta
+    name="description"
+    content="Accessible India provides clear accessibility information and browser tools."
+  />
+  <title>Accessible India</title>
+  <style>
+    :root {
+      --teal: #096b68;
+      --dark-teal: #073f3d;
+      --saffron: #e87532;
+      --paper: #fbf8f0;
+      --soft: #edf0e4;
+      --ink: #172f2e;
+      --muted: #50605e;
+      --line: #cbd6d0;
+      --white: #ffffff;
+      --focus: #ff9f43;
+      --font-size: 100%;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html {
+      scroll-behavior: smooth;
+      font-size: var(--font-size);
+    }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+    }
+    body.high-contrast {
+      --paper: #ffffff;
+      --soft: #eeeeee;
+      --ink: #000000;
+      --muted: #111111;
+      --line: #000000;
+      --teal: #003f3d;
+      --dark-teal: #000000;
+      --saffron: #a63d00;
+    }
+    body.large-text {
+      --font-size: 112%;
+    }
+    a {
+      color: inherit;
+    }
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+    button,
+    .button,
+    .file-label {
+      min-height: 48px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    button:focus-visible,
+    a:focus-visible,
+    input:focus-visible,
+    textarea:focus-visible,
+    .file-label:focus-visible {
+      outline: 4px solid var(--focus);
+      outline-offset: 3px;
+    }
+    .skip-link {
+      position: absolute;
+      top: -60px;
+      left: 16px;
+      z-index: 100;
+      padding: 12px 18px;
+      background: var(--dark-teal);
+      color: var(--white);
+      text-decoration: none;
+      border-radius: 8px;
+    }
+    .skip-link:focus {
+      top: 16px;
+    }
+    .container {
+      width: min(1120px, calc(100% - 40px));
+      margin: 0 auto;
+    }
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(251, 248, 240, 0.96);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(12px);
+    }
+    .nav-bar {
+      min-height: 76px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--ink);
+      text-decoration: none;
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+    .brand small {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      color: var(--white);
+      background: var(--teal);
+      border-radius: 12px;
+      font-size: 1.45rem;
+    }
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      align-items: center;
+    }
+    .nav-links a {
+      font-weight: 700;
+      text-decoration: none;
+    }
+    .nav-links a:hover {
+      color: var(--teal);
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-button,
+    .menu-button {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      padding: 0;
+      border: 1px solid var(--line);
+      background: var(--white);
+      color: var(--ink);
+    }
+    .menu-button {
+      display: none;
+    }
+    .hero {
+      padding: 110px 0 120px;
+      overflow: hidden;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr;
+      gap: 80px;
+      align-items: center;
+    }
+    .eyebrow {
+      margin: 0 0 26px;
+      color: var(--teal);
+      font-weight: 800;
+      font-size: 0.82rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 40px;
+      height: 2px;
+      margin: 0 12px 4px 0;
+      background: var(--saffron);
+    }
+    h1,
+    h2,
+    h3 {
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+    h1 {
+      max-width: 700px;
+      margin: 0;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      font-weight: 500;
+    }
+    h1 em {
+      color: var(--teal);
+      font-style: normal;
+    }
+    h2 {
+      margin: 0;
+      font-size: clamp(2.5rem, 5vw, 4.6rem);
+      font-weight: 500;
+    }
+    h3 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+    .hero-copy {
+      max-width: 650px;
+      margin: 28px 0;
+      color: var(--muted);
+      font-size: 1.2rem;
+    }
+    .hero-actions,
+    .tool-action {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+    }
+    .button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 13px 20px;
+      border: 2px solid var(--teal);
+      text-decoration: none;
+      font-weight: 800;
+    }
+    .button-primary {
+      background: var(--teal);
+      color: var(--white);
+    }
+    .button-primary:hover {
+      background: var(--dark-teal);
+    }
+    .button-secondary {
+      background: transparent;
+      color: var(--teal);
+    }
+    .button-secondary:hover {
+      background: var(--soft);
+    }
+    .hero-note {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 24px;
+      color: var(--muted);
+    }
+    .hero-art {
+      min-height: 390px;
+      display: grid;
+      place-items: center;
+      position: relative;
+    }
+    .hero-art::before {
+      content: "";
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      background: #d8ebe8;
+    }
+    .art-card {
+      position: relative;
+      width: min(100%, 380px);
+      padding: 46px 34px;
+      background: var(--teal);
+      color: var(--white);
+      border-radius: 28px;
+      transform: rotate(3deg);
+      box-shadow: 24px 24px 0 rgba(232, 117, 50, 0.85);
+    }
+    .art-kicker {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+    .art-card h2 {
+      margin-top: 40px;
+      font-size: 2.7rem;
+    }
+    .art-lines {
+      display: grid;
+      gap: 10px;
+      margin-top: 34px;
+    }
+    .art-lines span {
+      display: block;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.35);
+      border-radius: 99px;
+    }
+    .art-lines span:nth-child(2) {
+      width: 75%;
+    }
+    .art-lines span:nth-child(3) {
+      width: 58%;
+    }
+    .section {
+      padding: 110px 0;
+    }
+    .section-tint {
+      background: var(--soft);
+    }
+    .section-heading {
+      display: flex;
+      justify-content: space-between;
+      gap: 50px;
+      align-items: end;
+      margin-bottom: 70px;
+    }
+    .section-heading p {
+      max-width: 380px;
+      color: var(--muted);
+      font-size: 1.08rem;
+    }
+    .about-grid {
+      display: grid;
+      grid-template-columns: 0.55fr 1fr;
+      gap: 80px;
+    }
+    .big-number {
+      color: var(--saffron);
+      font-size: 7rem;
+      font-weight: 800;
+      line-height: 1;
+    }
+    .aside-caption {
+      max-width: 240px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .about-copy {
+      max-width: 700px;
+      font-size: 1.15rem;
+    }
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 28px 0;
+    }
+    .pill {
+      padding: 8px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+    .tools-shell {
+      display: grid;
+      grid-template-columns: 0.65fr 1fr;
+      gap: 70px;
+      padding: 70px;
+      background: var(--dark-teal);
+      color: var(--white);
+      border-radius: 28px;
+    }
+    .tools-shell h2 {
+      margin-bottom: 20px;
+    }
+    .tools-shell p {
+      color: #d5e4df;
+    }
+    .tool-list {
+      display: grid;
+      gap: 13px;
+      margin-top: 34px;
+      color: #d5e4df;
+    }
+    .tool-list span {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+    }
+    .tool-panels {
+      display: grid;
+      gap: 18px;
+    }
+    .tool-card {
+      padding: 26px;
+      background: var(--paper);
+      color: var(--ink);
+      border-radius: 18px;
+    }
+    .tool-card-head {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+    .tool-card-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    .tool-icon {
+      display: grid;
+      flex: 0 0 auto;
+      place-items: center;
+      width: 45px;
+      height: 45px;
+      color: var(--white);
+      background: var(--teal);
+      border-radius: 12px;
+    }
+    .tool-card .tool-action {
+      margin-top: 20px;
+    }
+    textarea {
+      width: 100%;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--paper);
+      color: var(--ink);
+      resize: vertical;
+    }
+    input[type="range"] {
+      width: 190px;
+      accent-color: var(--teal);
+    }
+    .status,
+    .file-name {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .status.error {
+      color: #a63d00;
+      font-weight: 700;
+    }
+    .file-label {
+      display: inline-flex;
+      align-items: center;
+      padding: 12px 16px;
+      background: var(--teal);
+      color: var(--white);
+      font-weight: 800;
+    }
+    .resource-grid {
+      display: grid;
+      grid-template-columns: 1fr 0.7fr;
+      gap: 60px;
+    }
+    .resource-list {
+      display: grid;
+    }
+    .resource-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+      text-decoration: none;
+    }
+    .resource-item strong,
+    .resource-item span span {
+      display: block;
+    }
+    .resource-item span span {
+      margin-top: 5px;
+      color: var(--muted);
+    }
+    .help-box {
+      padding: 32px;
+      background: var(--teal);
+      color: var(--white);
+      border-radius: 18px;
+    }
+    .help-box p {
+      color: #dceae6;
+    }
+    .help-box .button {
+      border-color: var(--white);
+      color: var(--white);
+    }
+    .help-box .button:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+    .footer {
+      padding: 60px 0;
+      background: var(--dark-teal);
+      color: var(--white);
+    }
+    .footer-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 30px;
+    }
+    .footer .brand {
+      color: var(--white);
+    }
+    .footer .brand small,
+    .microcopy {
+      color: #c7d9d4;
+    }
+    .microcopy {
+      margin-top: 20px;
+    }
+    .footer-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    @media (max-width: 800px) {
+      .nav-links {
+        display: none;
+        position: absolute;
+        top: 76px;
+        left: 20px;
+        right: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 10px;
+        background: var(--paper);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+      }
+      .nav-links.is-open {
+        display: flex;
+      }
+      .nav-links a {
+        padding: 14px;
+      }
+      .menu-button {
+        display: grid;
+      }
+      .hero,
+      .section {
+        padding: 75px 0;
+      }
+      .hero-grid,
+      .about-grid,
+      .tools-shell,
+      .resource-grid {
+        grid-template-columns: 1fr;
+        gap: 45px;
+      }
+      .tools-shell {
+        padding: 34px 22px;
+      }
+      .section-heading {
+        display: block;
+        margin-bottom: 45px;
+      }
+      .hero-art {
+        min-height: 300px;
+      }
+      .footer-grid {
+        display: block;
+      }
+      .footer-links {
+        margin-top: 28px;
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html {
+        scroll-behavior: auto;
+      }
+      *,
+      *::before,
+      *::after {
+        transition: none !important;
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <header class="site-header">
+    <div class="container nav-bar">
+      <a href="#home" class="brand">
+        <span class="brand-mark" aria-hidden="true">A</span>
+        <span>
+          Accessible India
+          <small>A practical public service</small>
+        </span>
+      </a>
+      <nav id="navigation" class="nav-links" aria-label="Primary navigation">
+        <a href="#about">About</a>
+        <a href="#tools">Tools</a>
+        <a href="#help">Help and resources</a>
+      </nav>
+      <div class="header-actions">
+        <button
+          id="contrastButton"
+          class="icon-button"
+          type="button"
+          aria-pressed="false"
+          aria-label="Turn on high contrast"
+          title="High contrast"
+        >
+          C
+        </button>
+        <button
+          id="menuButton"
+          class="menu-button"
+          type="button"
+          aria-expanded="false"
+          aria-controls="navigation"
+          aria-label="Open menu"
+        >
+          Menu
+        </button>
+      </div>
+    </div>
+  </header>
+  <main id="main-content">
+    <section id="home" class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div>
+          <p class="eyebrow">Information that meets you where you are</p>
+          <h1 id="hero-title">
+            Make access <em>easier.</em>
+          </h1>
+          <p class="hero-copy">
+            Find clear information, helpful browser tools, and a starting point
+            for support, designed for people across India.
+          </p>
+          <div class="hero-actions">
+            <a href="#tools" class="button button-primary">
+              Explore the tools
+            </a>
+            <a href="#help" class="button button-secondary">
+              Find support
+            </a>
+          </div>
+          <p class="hero-note">
+            No account. No complicated setup. Just a useful next step.
+          </p>
+        </div>
+        <div class="hero-art" aria-label="Accessibility illustration">
+          <div class="art-card">
+            <span class="art-kicker">A better starting point</span>
+            <h2>Small changes open big doors.</h2>
+            <div class="art-lines" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="about" class="section section-tint" aria-labelledby="about-title">
+      <div class="container">
+        <div class="section-heading">
+          <h2 id="about-title">Access is a right, not a hurdle.</h2>
+          <p>Start with what you need today. Return when you need something different tomorrow.</p>
+        </div>
+        <div class="about-grid">
+          <div>
+            <div class="big-number" aria-hidden="true">01</div>
+            <p class="aside-caption">
+              A shared guide for clearer communication and more independent days.
+            </p>
+          </div>
+          <div class="about-copy">
+            <p>
+              <strong>Accessible India brings the basics together.</strong>
+              It is a practical companion for navigating digital and everyday
+              access without jargon or assumptions.
+            </p>
+            <p>
+              Whether you are a person with a disability, a family member,
+              teacher, or service provider, you belong here.
+            </p>
+            <div class="pill-row" aria-label="Accessibility areas">
+              <span class="pill">Visual access</span>
+              <span class="pill">Hearing access</span>
+              <span class="pill">Mobility</span>
+              <span class="pill">Speech and language</span>
+              <span class="pill">Cognitive access</span>
+            </div>
+            <button id="readButton" class="button button-secondary" type="button">
+              Hear this introduction
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section id="tools" class="section" aria-labelledby="tools-title">
+      <div class="container tools-shell">
+        <div>
+          <p class="eyebrow" style="color: #f6b28a;">
+            Tools for right now
+          </p>
+          <h2 id="tools-title">Make this page yours.</h2>
+          <p>
+            Try one, or use a few together. Your choices stay in this browser.
+          </p>
+          <div class="tool-list">
+            <span>Large, comfortable text</span>
+            <span>Stronger contrast</span>
+            <span>Voice input when supported</span>
+            <span>Plain file feedback</span>
+          </div>
+        </div>
+        <div class="tool-panels">
+          <article class="tool-card">
+            <div class="tool-card-head">
+              <div class="tool-icon">T</div>
+              <div>
+                <h3>Reading comfort</h3>
+                <p>Adjust the page to match your eyes and your day.</p>
+              </div>
+            </div>
+            <div class="tool-action">
+              <button id="largeTextButton" class="button button-primary" type="button">
+                Use larger text
+              </button>
+              <button id="highContrastButton" class="button button-secondary" type="button">
+                High contrast
+              </button>
+            </div>
+            <div class="tool-action">
+              <label for="fontScale">
+                Text scale:
+                <strong id="fontScaleValue">100%</strong>
+              </label>
+              <input
+                id="fontScale"
+                type="range"
+                min="90"
+                max="125"
+                step="5"
+                value="100"
+                aria-label="Text scale"
+              />
+            </div>
+          </article>
+          <article class="tool-card">
+            <div class="tool-card-head">
+              <div class="tool-icon">M</div>
+              <div>
+                <h3>Speak your words</h3>
+                <p>
+                  Use your microphone to fill the note when your browser supports
+                  voice input.
+                </p>
+              </div>
+            </div>
+            <textarea
+              id="voiceNote"
+              rows="4"
+              placeholder="Your words will appear here..."
+              aria-label="Voice note text"
+            ></textarea>
+            <div class="tool-action">
+              <button id="microphoneButton" class="button button-primary" type="button">
+                Start microphone
+              </button>
+              <span id="microphoneStatus" class="status" aria-live="polite">
+                Ready when you are.
+              </span>
+            </div>
+          </article>
+          <article class="tool-card">
+            <div class="tool-card-head">
+              <div class="tool-icon">F</div>
+              <div>
+                <h3>Bring a document</h3>
+                <p>
+                  Choose a file to keep it close while you look for support.
+                  Nothing is uploaded.
+                </p>
+              </div>
+            </div>
+            <div class="tool-action">
+              <label class="file-label" for="fileInput">
+                Choose a file
+              </label>
+              <input id="fileInput" type="file" hidden />
+              <span id="fileName" class="file-name" aria-live="polite">
+                No file selected
+              </span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section id="help" class="section section-tint" aria-labelledby="help-title">
+      <div class="container">
+        <div class="section-heading">
+          <h2 id="help-title">A little help, in the right direction.</h2>
+          <p>
+            These starting points can help you find official information and
+            people who can listen.
+          </p>
+        </div>
+        <div class="resource-grid">
+          <div class="resource-list">
+            <a class="resource-item" href="https://depwd.gov.in/" target="_blank" rel="noreferrer">
+              <span>
+                <strong>Department of Empowerment of Persons with Disabilities</strong>
+                <span>Government information and schemes</span>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
+            <a class="resource-item" href="https://www.swavlambancard.gov.in/" target="_blank" rel="noreferrer">
+              <span>
+                <strong>Unique Disability ID</strong>
+                <span>Learn about disability identity cards</span>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
+            <a class="resource-item" href="https://www.nationaltrust.nic.in/" target="_blank" rel="noreferrer">
+              <span>
+                <strong>National Trust</strong>
+                <span>Support and resources for specific disabilities</span>
+              </span>
+              <span aria-hidden="true">→</span>
+            </a>
+          </div>
+          <aside class="help-box">
+            <h3>Not sure where to begin?</h3>
+            <p>
+              Take one small step: write down what would make today easier,
+              then share it with someone you trust.
+            </p>
+            <a class="button" href="mailto:help@accessibleindia.example">
+              Contact a support person
+            </a>
+          </aside>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div>
+        <a href="#home" class="brand">
+          <span class="brand-mark">A</span>
+          <span>
+            Accessible India
+            <small>A practical public service</small>
+          </span>
+        </a>
+        <p class="microcopy">
+          Built for clarity, dignity, and a more accessible everyday.
+        </p>
+      </div>
+      <nav class="footer-links" aria-label="Footer navigation">
+        <a href="#about">About</a>
+        <a href="#tools">Tools</a>
+        <a href="#help">Resources</a>
+      </nav>
+    </div>
+  </footer>
+  <script>
+    const body = document.body;
+    const menuButton = document.getElementById("menuButton");
+    const navigation = document.getElementById("navigation");
+    const contrastButton = document.getElementById("contrastButton");
+    const highContrastButton = document.getElementById("highContrastButton");
+    const largeTextButton = document.getElementById("largeTextButton");
+    const fontScale = document.getElementById("fontScale");
+    const fontScaleValue = document.getElementById("fontScaleValue");
+    const readButton = document.getElementById("readButton");
+    const microphoneButton = document.getElementById("microphoneButton");
+    const microphoneStatus = document.getElementById("microphoneStatus");
+    const voiceNote = document.getElementById("voiceNote");
+    const fileInput = document.getElementById("fileInput");
+    const fileName = document.getElementById("fileName");
+    let recognition = null;
+    let listening = false;
+    menuButton.addEventListener("click", () => {
+      const isOpen = navigation.classList.toggle("is-open");
+      menuButton.setAttribute("aria-expanded", String(isOpen));
+      menuButton.setAttribute("aria-label", isOpen ? "Close menu" : "Open menu");
+      menuButton.textContent = isOpen ? "Close" : "Menu";
+    });
+    navigation.querySelectorAll("a").forEach((link) => {
+      link.addEventListener("click", () => {
+        navigation.classList.remove("is-open");
+        menuButton.setAttribute("aria-expanded", "false");
+        menuButton.setAttribute("aria-label", "Open menu");
+        menuButton.textContent = "Menu";
+      });
+    });
+    function toggleContrast() {
+      const enabled = body.classList.toggle("high-contrast");
+      contrastButton.setAttribute("aria-pressed", String(enabled));
+      contrastButton.setAttribute(
+        "aria-label",
+        enabled ? "Turn off high contrast" : "Turn on high contrast"
+      );
+      highContrastButton.textContent = enabled
+        ? "Standard contrast"
+        : "High contrast";
+    }
+    contrastButton.addEventListener("click", toggleContrast);
+    highContrastButton.addEventListener("click", toggleContrast);
+    largeTextButton.addEventListener("click", () => {
+      const enabled = body.classList.toggle("large-text");
+      largeTextButton.textContent = enabled
+        ? "Use regular text"
+        : "Use larger text";
+      largeTextButton.setAttribute("aria-pressed", String(enabled));
+    });
+    fontScale.addEventListener("input", () => {
+      const value = fontScale.value;
+      document.documentElement.style.setProperty("--font-size", `${value}%`);
+      fontScaleValue.textContent = `${value}%`;
+    });
+    readButton.addEventListener("click", () => {
+      if (!("speechSynthesis" in window)) {
+        alert("Read aloud is not available in this browser.");
+        return;
+      }
+      if (speechSynthesis.speaking) {
+        speechSynthesis.cancel();
+        readButton.textContent = "Hear this introduction";
+        return;
+      }
+      const text =
+        "Accessible India is a calm, practical companion for finding accessibility information, tools, and support across India.";
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.onend = () => {
+        readButton.textContent = "Hear this introduction";
+      };
+      speechSynthesis.speak(utterance);
+      readButton.textContent = "Pause read aloud";
+    });
+    function startMicrophone() {
+      const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRecognition) {
+        microphoneStatus.textContent =
+          "Voice input is not available in this browser. You can type instead.";
+        return;
+      }
+      recognition = new SpeechRecognition();
+      recognition.lang = "en-IN";
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.onresult = (event) => {
+        let text = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          text += event.results[i][0].transcript;
+        }
+        voiceNote.value += `${voiceNote.value ? " " : ""}${text.trim()}`;
+      };
+      recognition.onerror = () => {
+        listening = false;
+        microphoneButton.textContent = "Start microphone";
+        microphoneStatus.textContent =
+          "We could not hear that. Please try again or type your message.";
+      };
+      recognition.onend = () => {
+        listening = false;
+        microphoneButton.textContent = "Start microphone";
+      };
+      recognition.start();
+      listening = true;
+      microphoneButton.textContent = "Stop listening";
+      microphoneStatus.textContent =
+        "Listening. Speak clearly, at your own pace.";
+    }
+    microphoneButton.addEventListener("click", () => {
+      if (listening) {
+        recognition.stop();
+        listening = false;
+        microphoneButton.textContent = "Start microphone";
+        microphoneStatus.textContent =
+          "Listening paused. Your words are saved above.";
+      } else {
+        startMicrophone();
+      }
+    });
+    fileInput.addEventListener("change", () => {
+      fileName.textContent = fileInput.files.length
+        ? fileInput.files[0].name
+        : "No file selected";
+    });
+  </script>
+</body>
+</html>

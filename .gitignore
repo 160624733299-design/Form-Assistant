@@ -3,3 +3,5 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+form_assistant.db
+uploads/

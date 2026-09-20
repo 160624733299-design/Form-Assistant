@@ -643,6 +643,22 @@
           <p class="hero-note">
             No account. No complicated setup. Just a useful next step.
           </p>
+          <div class="quick-start" aria-labelledby="quick-start-title">
+            <h3 id="quick-start-title">Start your form here</h3>
+            <p>Take a clear photo of the form, choose it, then analyze it.</p>
+            <ol class="quick-steps">
+              <li>Upload your form photo.</li>
+              <li>Click Analyze form.</li>
+              <li>Fill and confirm each field below.</li>
+            </ol>
+            <div class="hero-actions">
+              <label class="button button-primary" for="fileInput">Upload form photo</label>
+              <button id="heroAnalyzeButton" class="button button-secondary" type="button" disabled>
+                Analyze form
+              </button>
+            </div>
+            <span id="heroFileName" class="status" aria-live="polite">No form selected</span>
+          </div>
         </div>
         <div class="hero-art" aria-label="Accessibility illustration">
           <div class="art-card">
@@ -776,19 +792,25 @@
               <div>
                 <h3>Bring a document</h3>
                 <p>
-                  Choose a file to keep it close while you look for support.
-                  Nothing is uploaded.
+                  Upload a clear form image. The backend will extract its visible
+                  fields and save the form for the next step.
                 </p>
               </div>
             </div>
             <div class="tool-action">
               <label class="file-label" for="fileInput">
-                Choose a file
+                Choose a form image
               </label>
-              <input id="fileInput" type="file" hidden />
+              <input id="fileInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden />
+              <button id="analyzeButton" class="button button-primary" type="button" disabled>
+                Analyze form
+              </button>
               <span id="fileName" class="file-name" aria-live="polite">
                 No file selected
               </span>
+              <span id="analysisStatus" class="status" aria-live="polite"></span>
+              <pre id="analysisResult" hidden></pre>
+              <div id="formWorkflow" hidden></div>
             </div>
           </article>
         </div>
@@ -877,7 +899,14 @@
     const voiceNote = document.getElementById("voiceNote");
     const fileInput = document.getElementById("fileInput");
     const fileName = document.getElementById("fileName");
-    let recognition = null;
+    const analyzeButton = document.getElementById("analyzeButton");
+    const heroAnalyzeButton = document.getElementById("heroAnalyzeButton");
+    const heroFileName = document.getElementById("heroFileName");
+    const analysisStatus = document.getElementById("analysisStatus");
+    const analysisResult = document.getElementById("analysisResult");
+    const formWorkflow = document.getElementById("formWorkflow");
+    let mediaRecorder = null;
+    let recordedChunks = [];
     let listening = false;
     menuButton.addEventListener("click", () => {
       const isOpen = navigation.classList.toggle("is-open");
@@ -937,57 +966,156 @@
       speechSynthesis.speak(utterance);
       readButton.textContent = "Pause read aloud";
     });
-    function startMicrophone() {
-      const SpeechRecognition =
-        window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) {
-        microphoneStatus.textContent =
-          "Voice input is not available in this browser. You can type instead.";
+    async function startMicrophone() {
+      if (!navigator.mediaDevices || !window.MediaRecorder) {
+        microphoneStatus.textContent = "Audio recording is not supported in this browser.";
         return;
       }
-      recognition = new SpeechRecognition();
-      recognition.lang = "en-IN";
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.onresult = (event) => {
-        let text = "";
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          text += event.results[i][0].transcript;
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      recordedChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size) recordedChunks.push(event.data);
+      };
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        microphoneStatus.textContent = "Sending audio for Indian-language transcription...";
+        const audio = new Blob(recordedChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+        const data = new FormData();
+        data.append("file", audio, "voice.webm");
+        try {
+          const response = await fetch("/voice/transcribe", { method: "POST", body: data });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.detail || "Voice transcription failed.");
+          voiceNote.value += `${voiceNote.value ? " " : ""}${result.transcript}`;
+          microphoneStatus.textContent = `Transcribed (${result.language_code || "detected language"}).`;
+        } catch (error) {
+          microphoneStatus.textContent = error.message;
         }
-        voiceNote.value += `${voiceNote.value ? " " : ""}${text.trim()}`;
       };
-      recognition.onerror = () => {
-        listening = false;
-        microphoneButton.textContent = "Start microphone";
-        microphoneStatus.textContent =
-          "We could not hear that. Please try again or type your message.";
-      };
-      recognition.onend = () => {
-        listening = false;
-        microphoneButton.textContent = "Start microphone";
-      };
-      recognition.start();
+      mediaRecorder.start();
       listening = true;
       microphoneButton.textContent = "Stop listening";
-      microphoneStatus.textContent =
-        "Listening. Speak clearly, at your own pace.";
+      microphoneStatus.textContent = "Listening. Speak clearly, at your own pace.";
     }
     microphoneButton.addEventListener("click", () => {
       if (listening) {
-        recognition.stop();
+        mediaRecorder.stop();
         listening = false;
         microphoneButton.textContent = "Start microphone";
-        microphoneStatus.textContent =
-          "Listening paused. Your words are saved above.";
+        microphoneStatus.textContent = "Recording stopped.";
       } else {
-        startMicrophone();
+        startMicrophone().catch(() => {
+          microphoneStatus.textContent = "Microphone permission was not granted.";
+        });
       }
     });
     fileInput.addEventListener("change", () => {
-      fileName.textContent = fileInput.files.length
+      const hasFile = fileInput.files.length > 0;
+      analyzeButton.disabled = !hasFile;
+      heroAnalyzeButton.disabled = !hasFile;
+      fileName.textContent = hasFile
         ? fileInput.files[0].name
         : "No file selected";
+      heroFileName.textContent = hasFile
+        ? `Selected: ${fileInput.files[0].name}`
+        : "No form selected";
     });
+    heroAnalyzeButton.addEventListener("click", () => {
+      document.getElementById("tools").scrollIntoView({ behavior: "smooth" });
+      analyzeButton.click();
+    });
+    analyzeButton.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+      analyzeButton.disabled = true;
+      analysisStatus.textContent = "Analyzing the form...";
+      analysisResult.hidden = true;
+      const data = new FormData();
+      data.append("file", file);
+      try {
+        const response = await fetch("/forms/analyze", { method: "POST", body: data });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.detail || "Form analysis failed.");
+        analysisStatus.textContent = `Form saved. ID: ${result.form_id}`;
+        analysisResult.textContent = JSON.stringify(result.form, null, 2);
+        analysisResult.hidden = false;
+        renderFormWorkflow(result.form_id, result.form);
+        formWorkflow.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (error) {
+        analysisStatus.textContent = error.message;
+      } finally {
+        analyzeButton.disabled = false;
+      }
+    });
+    function renderFormWorkflow(formId, form) {
+      formWorkflow.replaceChildren();
+      formWorkflow.hidden = false;
+      const heading = document.createElement("h4");
+      heading.textContent = `Answer ${form.form_name}`;
+      formWorkflow.appendChild(heading);
+      form.fields.forEach((field) => {
+        const wrapper = document.createElement("div");
+        const label = document.createElement("label");
+        label.textContent = `${field.label}${field.required ? " *" : ""}`;
+        label.htmlFor = `answer-${field.id}`;
+        const input = document.createElement(field.type === "textarea" ? "textarea" : "input");
+        input.id = label.htmlFor;
+        input.name = field.id;
+        input.required = field.required;
+        input.setAttribute("aria-describedby", `help-${field.id}`);
+        if (field.type === "date") input.type = "date";
+        else if (field.type === "email") input.type = "email";
+        else if (field.type === "number" || field.type === "phone") input.type = "text";
+        if (field.options.length) {
+          input.type = "text";
+          input.placeholder = field.options.join(", ");
+        }
+        const help = document.createElement("small");
+        help.id = `help-${field.id}`;
+        help.textContent = field.explanation || field.validation?.instructions?.join(" ") || "";
+        const save = document.createElement("button");
+        save.type = "button";
+        save.className = "button button-secondary";
+        save.textContent = "Confirm answer";
+        const status = document.createElement("span");
+        status.className = "status";
+        status.setAttribute("aria-live", "polite");
+        save.addEventListener("click", async () => {
+          save.disabled = true;
+          status.textContent = "Saving...";
+          try {
+            const response = await fetch(`/forms/${formId}/answers`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ field_id: field.id, value: input.value, confirmed: true }),
+            });
+            const payload = await response.json();
+            if (!response.ok) throw new Error(payload.detail || "That answer could not be saved.");
+            input.disabled = true;
+            save.remove();
+            status.textContent = "Confirmed and saved.";
+            if ([...formWorkflow.querySelectorAll("input, textarea")].every((item) => item.disabled)) {
+              const submit = document.createElement("button");
+              submit.type = "button";
+              submit.className = "button button-primary";
+              submit.textContent = "Submit completed form";
+              submit.addEventListener("click", async () => {
+                const result = await fetch(`/forms/${formId}/submit`, { method: "POST" });
+                const body = await result.json();
+                status.textContent = result.ok ? `Submitted successfully. Submission ID: ${body.submission_id}` : body.detail;
+              });
+              formWorkflow.appendChild(submit);
+            }
+          } catch (error) {
+            status.textContent = error.message;
+            save.disabled = false;
+          }
+        });
+        wrapper.append(label, input, help, save, status);
+        formWorkflow.appendChild(wrapper);
+      });
+    }
   </script>
 </body>
 </html>
